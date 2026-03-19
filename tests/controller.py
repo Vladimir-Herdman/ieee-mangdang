@@ -16,6 +16,7 @@ Setup:
 
 Links:
     - pygame-ce github: https://github.com/pygame-community/pygame-ce
+        - joystick documentation: https://pyga.me/docs/ref/joystick.html#module-pygame.joystick
     - pyKey github: https://github.com/gauthsvenkat/pyKey
 """
 #Most of the code here is taken and massaged verbatum from the pygame
