@@ -22,23 +22,29 @@ Setup:
 #Most of this comes from the minipupper documentation, playing around
 #and reading minipupper code, and the controller test file in /tests/
 from geometry_msgs.msg import Twist
+from MangDang.mini_pupper.display import Display, BehaviorState
 import pygame
 import rclpy
 from rclpy.node import Node
 
 rclpy.init()
 pygame.init()
+pygame.mixer.init()
+pygame.mixer.music.load("<path to rocky music once sent over ssh>")
 joystick = pygame.joystick.Joystick(0)
 
 class ControllerNode(Node):
     def __init__(self):
         super().__init__("controller_teleop")
+        self.disp = Display()
         self.publisher = self.create_publisher(Twist, 'cmd_vel', 10)
         self.timer = self.create_timer(0.05, self.loop)
 
         self.max_linear_speed = 0.3
         self.max_angular_speed = 1.0
         self.deadzone = 0.3
+        
+        self.music_started = False
 
     def apply_deadzone(self, value):
         return value if abs(value) > self.deadzone else 0.0
@@ -49,9 +55,25 @@ class ControllerNode(Node):
 
         yaxis = -self.apply_deadzone(self.joystick.get_axis(1))
         xaxis = -self.apply_deadzone(self.joystick.get_axis(0))
-
         twist.linear.x = yaxis * self.max_linear_speed
         twist.angular.z = xaxis * self.max_angular_speed
+
+        bottombutton = joystick.get_button(0)
+        rightbutton  = joystick.get_button(1)
+        leftbutton   = joystick.get_button(2)
+        topbutton    = joystick.get_button(3)
+        if bottombutton == 1:
+            self.disp.show_image('<insert path to angry once pngs sent through ssh>')
+        elif rightbutton == 1:
+            if pygame.mixer.music.get_busy():
+                pygame.mixer.music.pause()
+            else:
+                pygame.mixer.music.unpause()
+        elif leftbutton == 1:
+            self.disp.show_image('<insert path to struggle once pngs sent through ssh>')
+        elif topbutton == 1 and not self.music_started:
+            pygame.mixer.music.play()
+            self.music_started = True
 
         self.publisher.publish(twist)
 
@@ -66,6 +88,7 @@ finally:
     node.destroy_node()
     rclpy.shutdown()
     pygame.quit()
+    pygame.mixer.music.unload()
 
 # while running:
 #     xaxis = joystick.get_axis(0)
